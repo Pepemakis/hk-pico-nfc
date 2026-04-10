@@ -35,6 +35,51 @@ def _parse_url(url):
     return is_https, host, port, path
 
 
+def _open_connection(url, timeout_s):
+    is_https, host, port, path = _parse_url(url)
+    addr = socket.getaddrinfo(host, port)[0][-1]
+
+    s = socket.socket()
+    s.settimeout(timeout_s)
+    conn = s
+    try:
+        s.connect(addr)
+        conn = ssl.wrap_socket(s) if is_https else s
+        return conn, s, host, path
+    except Exception:
+        try:
+            conn.close()
+        except OSError:
+            pass
+        try:
+            s.close()
+        except OSError:
+            pass
+        raise
+
+
+def _read_until(conn, marker):
+    data = b""
+    while marker not in data:
+        chunk = conn.read(256)
+        if not chunk:
+            break
+        data += chunk
+    return data
+
+
+def _parse_response_head(head):
+    status_line = head.split(b"\r\n", 1)[0].decode("utf-8", "ignore")
+    status_code = 0
+    parts = status_line.split(" ")
+    if len(parts) >= 2:
+        try:
+            status_code = int(parts[1])
+        except ValueError:
+            status_code = 0
+    return status_code, status_line
+
+
 def _is_discord_webhook(url):
     return (
         "discord.com/api/webhooks/" in url
@@ -64,16 +109,8 @@ def _build_discord_payload(payload):
 
 
 def post_json(url, payload, timeout_s=5):
-    is_https, host, port, path = _parse_url(url)
-    addr = socket.getaddrinfo(host, port)[0][-1]
-
-    s = socket.socket()
-    s.settimeout(timeout_s)
-    conn = s
+    conn, s, host, path = _open_connection(url, timeout_s)
     try:
-        s.connect(addr)
-        conn = ssl.wrap_socket(s) if is_https else s
-
         body_payload = _build_discord_payload(payload) if _is_discord_webhook(url) else payload
         body = json.dumps(body_payload)
         req = (
@@ -96,15 +133,7 @@ def post_json(url, payload, timeout_s=5):
                 break
             response += chunk
 
-        status_line = response.split(b"\r\n", 1)[0].decode("utf-8", "ignore")
-        status_code = 0
-        parts = status_line.split(" ")
-        if len(parts) >= 2:
-            try:
-                status_code = int(parts[1])
-            except ValueError:
-                status_code = 0
-
+        status_code, status_line = _parse_response_head(response)
         return status_code, status_line
     finally:
         try:
@@ -116,3 +145,79 @@ def post_json(url, payload, timeout_s=5):
         except OSError:
             pass
 
+
+def get_json(url, timeout_s=5):
+    conn, s, host, path = _open_connection(url, timeout_s)
+    try:
+        req = (
+            "GET {path} HTTP/1.1\r\n"
+            "Host: {host}\r\n"
+            "User-Agent: pico2w/1.0\r\n"
+            "Accept: application/json\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+        ).format(path=path, host=host)
+        conn.write(req.encode())
+
+        response = b""
+        while True:
+            chunk = conn.read(256)
+            if not chunk:
+                break
+            response += chunk
+
+        head, body = response.split(b"\r\n\r\n", 1)
+        status_code, status_line = _parse_response_head(head)
+        return status_code, status_line, json.loads(body.decode("utf-8"))
+    finally:
+        try:
+            conn.close()
+        except OSError:
+            pass
+        try:
+            s.close()
+        except OSError:
+            pass
+
+
+def download_file(url, tmp_path, timeout_s=10):
+    conn, s, host, path = _open_connection(url, timeout_s)
+    try:
+        req = (
+            "GET {path} HTTP/1.1\r\n"
+            "Host: {host}\r\n"
+            "User-Agent: pico2w/1.0\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+        ).format(path=path, host=host)
+        conn.write(req.encode())
+
+        response_head = _read_until(conn, b"\r\n\r\n")
+        if b"\r\n\r\n" not in response_head:
+            raise OSError("HTTP response missing headers")
+
+        head, initial_body = response_head.split(b"\r\n\r\n", 1)
+        status_code, status_line = _parse_response_head(head)
+        if not (200 <= status_code < 300):
+            raise OSError(status_line)
+
+        with open(tmp_path, "wb") as f:
+            if initial_body:
+                f.write(initial_body)
+
+            while True:
+                chunk = conn.read(512)
+                if not chunk:
+                    break
+                f.write(chunk)
+
+        return status_code, status_line
+    finally:
+        try:
+            conn.close()
+        except OSError:
+            pass
+        try:
+            s.close()
+        except OSError:
+            pass

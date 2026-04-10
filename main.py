@@ -15,6 +15,7 @@ from wifi import (
 )
 from local_server import start_http_server, serve_http_once
 from cloud_client import post_json
+from ota import perform_update, recover_if_needed
 
 
 config, has_cfg = load_config()
@@ -217,6 +218,40 @@ def show_progress_screen(mode, line2, line3, progress_width):
     display.show()
 
 
+def show_ota_progress(stage, label, index, total):
+    if stage == "prepare":
+        show_status("OTA CHECK", "Update found", label[:16])
+        return
+
+    title = "OTA DL" if stage == "download" else "OTA APPLY"
+    step_line = "{}/{}".format(index, total) if total else ""
+    show_status(title, label[:16], step_line)
+
+
+def run_ota_update():
+    manifest_url = config.get("OTA_MANIFEST_URL", "").strip()
+    if not config.get("OTA_ENABLED") or not config.get("OTA_CHECK_ON_BOOT", True):
+        return
+    if not manifest_url:
+        return
+
+    try:
+        updated, result = perform_update(manifest_url, progress_cb=show_ota_progress)
+    except Exception as exc:
+        print("OTA failed:", exc)
+        show_status("OTA FAIL", "Update error", str(exc)[:16])
+        time.sleep(2.0)
+        return
+
+    if updated:
+        print("OTA installed:", result)
+        show_status("OTA OK", "Installed", "Rebooting...")
+        time.sleep(1.5)
+        machine.reset()
+
+    print("OTA:", result)
+
+
 # ----------------------------
 # Boot networking logic
 # ----------------------------
@@ -228,6 +263,11 @@ last_uid = None
 device_id = get_device_uid_hex()
 scan_feedback_until = 0
 scan_feedback_uid = None
+
+recovery_state = recover_if_needed()
+if recovery_state:
+    show_status("OTA WARN", "Recovered", recovery_state.get("state", "")[:16])
+    time.sleep(1.5)
 
 
 def format_uid(uid_bytes):
@@ -265,6 +305,7 @@ if sta and sta.isconnected():
     print("Connected to Wi-Fi")
     print("IP:", ip)
     show_status("Wi-Fi: STA", "Connected", ip)
+    run_ota_update()
 else:
     wifi_icon_state = "ap"
     ap = start_ap(config["AP_SSID"], config["AP_PASSWORD"], config["AP_CHANNEL"])

@@ -22,6 +22,9 @@ DEFAULTS = {
     "NFC_SCL_PIN": 21,
     "NFC_SDA_PIN": 20,
     "NFC_SCAN_POST_URL": "",
+    "OTA_ENABLED": False,
+    "OTA_MANIFEST_URL": "",
+    "OTA_CHECK_ON_BOOT": True,
 }
 
 
@@ -119,6 +122,11 @@ NFC_I2C_ID = {nfc_i2c_id}
 NFC_SCL_PIN = {nfc_scl_pin}
 NFC_SDA_PIN = {nfc_sda_pin}
 NFC_SCAN_POST_URL = {nfc_scan_post_url!r}
+
+# OTA update settings
+OTA_ENABLED = {ota_enabled}
+OTA_MANIFEST_URL = {ota_manifest_url!r}
+OTA_CHECK_ON_BOOT = {ota_check_on_boot}
 """.format(
         sta_ssid=ssid,
         sta_password=password,
@@ -131,7 +139,9 @@ NFC_SCAN_POST_URL = {nfc_scan_post_url!r}
         nfc_scl_pin=config.get("NFC_SCL_PIN", 21),
         nfc_sda_pin=config.get("NFC_SDA_PIN", 20),
         nfc_scan_post_url=config.get("NFC_SCAN_POST_URL", ""),
+        ota_enabled=config.get("OTA_ENABLED", False),
+        ota_manifest_url=config.get("OTA_MANIFEST_URL", ""),
+        ota_check_on_boot=config.get("OTA_CHECK_ON_BOOT", True),
     )
     with open("wifi_config.py", "w") as f:
         f.write(content)
-
