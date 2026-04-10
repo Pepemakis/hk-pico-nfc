@@ -1,5 +1,5 @@
 {
-  "version": "0.1.0",
+  "version": "0.1.1",
   "min_updater_version": 1,
   "entrypoint": "main.py",
   "files": [
@@ -60,7 +60,7 @@
     {
       "path": "version.py",
       "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/version.py",
-      "sha256": "6806abc98f8e88bb2efc0d74984e63b47628caecaacde7a22160794b64db73b0",
+      "sha256": "03128a27cd7f6781959acd251a37143804901478759687ca039bd361c07a1c46",
       "size": 22
     }
   ]
