@@ -5,61 +5,61 @@
   "files": [
     {
       "path": "main.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/main.py",
-      "sha256": "007b2cdb7cca6486a47e5da699828233402cf933a079022561d616d7cfa2afcf",
-      "size": 9750
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/main.py",
+      "sha256": "787f9a2eeea1e980379d212579a8f5be8a6d968039d6211a8839d2b7d57b29b0",
+      "size": 10758
     },
     {
       "path": "wifi.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/wifi.py",
-      "sha256": "db85c920148281ea806a771b87e49a92b23561d42a79a8140d9cf36db1c9e0d5",
-      "size": 3625
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/wifi.py",
+      "sha256": "2075f5352dc9c55d3ecce420d22a405833dd8bb936c96537a8e362f6dafb53d1",
+      "size": 3702
     },
     {
       "path": "cloud_client.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/cloud_client.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/cloud_client.py",
       "sha256": "ca983ee4fc666dfa8ce8e65d04a8bd250d393ff0a3b8d10cafc8efeee376fb8c",
       "size": 5652
     },
     {
       "path": "local_server.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/local_server.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/local_server.py",
       "sha256": "84563d06d357a384fdaa5e4430c9b32bd8dba2792c485685311dab98f2d51dd6",
       "size": 7139
     },
     {
       "path": "access_point.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/access_point.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/access_point.py",
       "sha256": "77b5306db4bdaa79134d205e3c5204e77c78c9b8d64016415cac5d7a798a4bf3",
       "size": 243
     },
     {
       "path": "pn532.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/pn532.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/pn532.py",
       "sha256": "3c21fabc463c1fc0c19ab03a0c797bb1ea91d79eadc8c3cd66c51d9bc800e3fa",
       "size": 19214
     },
     {
       "path": "uart.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/uart.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/uart.py",
       "sha256": "2e8700395f64ddebd925d00d07b13647ebaed30cd278b80f955b484c66384816",
       "size": 2001
     },
     {
       "path": "sh1107.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/sh1107.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/sh1107.py",
       "sha256": "c26f881317fbf4e9fd3466338b0d275487b80ef93dd52f6320f69bf2a3d18eb4",
       "size": 17051
     },
     {
       "path": "ota.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/ota.py",
-      "sha256": "d7d63893d50a989e71fd647ef578304ea92c6a8bc38e925aa9b1ce03659faee8",
-      "size": 6400
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/ota.py",
+      "sha256": "01b66ac9e23394c813e5fb2b50872af5522de7709a145698ea430ee578ce2335",
+      "size": 6450
     },
     {
       "path": "version.py",
-      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/version.py",
+      "url": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc/main/version.py",
       "sha256": "6806abc98f8e88bb2efc0d74984e63b47628caecaacde7a22160794b64db73b0",
       "size": 22
     }
