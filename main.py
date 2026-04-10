@@ -15,7 +15,11 @@ from wifi import (
 )
 from local_server import start_http_server, serve_http_once
 from cloud_client import post_json
-from ota import perform_update, recover_if_needed
+try:
+    from version import APP_VERSION
+except Exception as exc:
+    print("Version unavailable:", exc)
+    APP_VERSION = "?"
 
 
 config, has_cfg = load_config()
@@ -30,20 +34,22 @@ print("Boot config: STA_SSID={!r}, AP_SSID={!r}".format(config["STA_SSID"], conf
 # slower I2C first
 
 # UART0 for PN532
+pn532 = None
 uart = UART(0, baudrate=115200, tx=Pin(0), rx=Pin(1))
-pn532 = PN532_UART(uart, debug=False)
 
 print("Searching PN532...")
-
-ic, ver, rev, support = pn532.firmware_version
-print("PN532 found")
-print("IC:", hex(ic))
-print("Firmware:", ver, ".", rev)
-print("Support:", hex(support))
-
-pn532.SAM_configuration()
-print("Waiting for NFC tag...")
-
+try:
+    pn532 = PN532_UART(uart, debug=False)
+    ic, ver, rev, support = pn532.firmware_version
+    print("PN532 found")
+    print("IC:", hex(ic))
+    print("Firmware:", ver, ".", rev)
+    print("Support:", hex(support))
+    pn532.SAM_configuration()
+    print("Waiting for NFC tag...")
+except Exception as exc:
+    pn532 = None
+    print("PN532 unavailable:", exc)
 
 # ----------------------------
 # Display setup (SPI1 on Pico / Pico 2W)
@@ -170,6 +176,7 @@ def draw_usb_power_icon(x, y, present):
 
 def draw_top_bar():
     display.fill_rect(0, 0, 128, TOP_BAR_HEIGHT, 0)
+    display.text("v" + APP_VERSION[:7], 0, 2, 1)
     draw_wifi_icon(92, 1, wifi_icon_state)
     draw_usb_power_icon(104, 1, usb_power_present())
     draw_battery_icon(114, 1, battery_level)
@@ -236,6 +243,14 @@ def run_ota_update():
         return
 
     try:
+        from ota import perform_update
+    except Exception as exc:
+        print("OTA unavailable:", exc)
+        show_status("OTA FAIL", "Module missing", "")
+        time.sleep(1.5)
+        return
+
+    try:
         updated, result = perform_update(manifest_url, progress_cb=show_ota_progress)
     except Exception as exc:
         print("OTA failed:", exc)
@@ -251,7 +266,6 @@ def run_ota_update():
 
     print("OTA:", result)
 
-
 # ----------------------------
 # Boot networking logic
 # ----------------------------
@@ -264,9 +278,8 @@ device_id = get_device_uid_hex()
 scan_feedback_until = 0
 scan_feedback_uid = None
 
-recovery_state = recover_if_needed()
-if recovery_state:
-    show_status("OTA WARN", "Recovered", recovery_state.get("state", "")[:16])
+if pn532 is None:
+    show_status("NFC FAIL", "PN532 missing", "")
     time.sleep(1.5)
 
 
@@ -305,6 +318,16 @@ if sta and sta.isconnected():
     print("Connected to Wi-Fi")
     print("IP:", ip)
     show_status("Wi-Fi: STA", "Connected", ip)
+    if config.get("OTA_ENABLED") and config.get("OTA_CHECK_ON_BOOT", True):
+        try:
+            from ota import recover_if_needed
+            recovery_state = recover_if_needed()
+        except Exception as exc:
+            print("OTA recovery unavailable:", exc)
+            recovery_state = None
+        if recovery_state:
+            show_status("OTA WARN", "Recovered", recovery_state.get("state", "")[:16])
+            time.sleep(1.5)
     run_ota_update()
 else:
     wifi_icon_state = "ap"
@@ -354,7 +377,7 @@ while True:
         scan_feedback_uid = None
         show_status("NFC READY", "Waiting tag...", "")
 
-    uid = pn532.read_passive_target(timeout=500)
+    uid = pn532.read_passive_target(timeout=500) if pn532 is not None else None
     if uid is not None:
         uid_hex = format_uid(uid)
         if uid_hex != last_uid:
@@ -371,6 +394,10 @@ while True:
         if last_uid is not None and scan_feedback_uid is None:
             send_nfc_event(last_uid, 0)
         last_uid = None
+        if pn532 is None:
+            show_status("NFC FAIL", "Check wiring", "or power")
+            time.sleep(0.5)
+            continue
         display.fill_rect(0, 54, 128, 10, 0)
         display.fill_rect(x, 56, 10, 6, 1)
         display.show()

@@ -22,8 +22,8 @@ DEFAULTS = {
     "NFC_SCL_PIN": 21,
     "NFC_SDA_PIN": 20,
     "NFC_SCAN_POST_URL": "",
-    "OTA_ENABLED": False,
-    "OTA_MANIFEST_URL": "",
+    "OTA_ENABLED": True,
+    "OTA_MANIFEST_URL": "https://raw.githubusercontent.com/Pepemakis/hk-pico-nfc.git/main/manifest.json",
     "OTA_CHECK_ON_BOOT": True,
 }
 

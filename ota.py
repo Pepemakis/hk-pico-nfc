@@ -19,7 +19,11 @@ except ImportError:
     import binascii
 
 from cloud_client import get_json, download_file
-from version import APP_VERSION
+
+try:
+    from version import APP_VERSION
+except Exception:
+    APP_VERSION = "?"
 
 
 STATE_PATH = "ota_state.json"
